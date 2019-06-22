@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t angzeyu/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true angzeyu/react-test npm test -- --watchAll=false
+
+after_success:
+  - docker build -t angzeyu/client ./client
+  - docker build -t angzeyu/nginx ./nginx
+  - docker build -t angzeyu/server ./server
+  - docker build -t angzeyu/worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push angzeyu/client
+  - docker push angzeyu/nginx
+  - docker push angzeyu/server
+  - docker push angzeyu/worker
